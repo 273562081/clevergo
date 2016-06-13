@@ -16,7 +16,8 @@ type Application struct {
 	router          *httprouter.Router
 	middlewares     []Middleware
 	firstMiddleware Middleware
-	actions         []*Action
+	actions         []*WebAction
+	resources       []*RestAction
 	sessionStore    session.Store
 	logger          *log.Logger
 	cache           *cache.RedisCache
@@ -27,7 +28,8 @@ func NewApplication() *Application {
 		router:          httprouter.New(),
 		middlewares:     make([]Middleware, 0),
 		firstMiddleware: nil,
-		actions:         make([]*Action, 0),
+		actions:         make([]*WebAction, 0),
+		resources:         make([]*RestAction, 0),
 		sessionStore:    nil,
 		logger:          nil,
 		cache:           nil,
@@ -100,12 +102,12 @@ func (a *Application) RegisterWebController(c Controller) {
 	}
 
 	// Get actions's route.
-	actionsRoute := make(map[string]ActionRoute)
+	actionsRoute := make(map[string]WebActionRoute)
 	actionsMethod := cv.MethodByName("Actions")
 	if actionsMethod.IsValid() {
 		values := actionsMethod.Call([]reflect.Value{})
 		for i := 0; i < len(values); i++ {
-			if value, ok := values[i].Interface().(map[string]ActionRoute); ok {
+			if value, ok := values[i].Interface().(map[string]WebActionRoute); ok {
 				actionsRoute = value
 			}
 			break
@@ -115,7 +117,7 @@ func (a *Application) RegisterWebController(c Controller) {
 	for i := 0; i < ct.NumMethod(); i++ {
 		method := ct.Method(i)
 		if v, ok := actionsRoute[method.Name]; ok {
-			action, err := NewAction(a, v.Route, v.Methods, method.Name, i)
+			action, err := NewWebAction(a, v.Route, v.Methods, method.Name, i)
 
 			if err != nil {
 				panic(err)
@@ -127,24 +129,70 @@ func (a *Application) RegisterWebController(c Controller) {
 	}
 }
 
+func (a *Application) RegisterRestController(route string, c Controller) {
+	ct := reflect.TypeOf(c)
+	cv := reflect.ValueOf(c)
+
+	// Controller's info.
+	ci := &ControllerInfo{
+		fullName: ct.Elem().Name(),
+		t:        cv.Elem().Type(),
+		pkgPath:  path.Join(Configuration.srcPath, ct.Elem().PkgPath()),
+	}
+
+	ci.name = getControllerName(ct.Elem().Name())
+	ci.prettyName = PrettyName(ci.name)
+
+	resource := NewRestAction(a, route)
+	allowedMethods := RestHTTPMethods
+
+	for i := 0; i < ct.NumMethod(); i++ {
+		method := ct.Method(i)
+
+		if _, ok := allowedMethods[strings.ToUpper(method.Name)]; ok {
+			err := resource.AddMethod(&RestMethod{Name:method.Name, Index:i})
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+
+	if len(resource.methods) == 0 {
+		fmt.Printf(`Failed to register restful controller named "%s": no valid methods.\n`, ci.name)
+	} else {
+		resource.controller = ci
+		a.resources = append(a.resources, resource)
+	}
+}
+
 func (a *Application) Run() {
 	// Initialize first middleware and final middleware.
 	middlewaresLen := len(a.middlewares)
 	if middlewaresLen > 0 {
 		if middlewaresLen > 1 {
-			for i := 0; i < middlewaresLen-1; i++ {
-				a.middlewares[i].SetNext(a.middlewares[i+1])
+			for i := 0; i < middlewaresLen - 1; i++ {
+				a.middlewares[i].SetNext(a.middlewares[i + 1])
 			}
 		}
-		a.middlewares[0].SetFinal(a.middlewares[middlewaresLen-1])
+		a.middlewares[0].SetFinal(a.middlewares[middlewaresLen - 1])
 		a.firstMiddleware = a.middlewares[0]
 	}
 
+	// Register web controller's action.
 	for i := 0; i < len(a.actions); i++ {
+		a.actions[i].handler = GenerateWebActionHandler(a.actions[i])
 		for j := 0; j < len(a.actions[i].methods); j++ {
-			fmt.Println(a.actions[i].route)
-			a.actions[i].handler = GenerateHandler(a.actions[i])
+			fmt.Printf("Register web controller's route \"%s\" with method: %s\n", a.actions[i].route, a.actions[i].methods[j])
 			a.router.Handle(a.actions[i].methods[j], a.actions[i].route, a.actions[i].handler)
+		}
+	}
+
+	// Register restful controller's action.
+	for i := 0; i < len(a.resources); i++ {
+		a.resources[i].handler = GenerateRestActionHandler(a.resources[i])
+		for method, _ := range a.resources[i].methods {
+			fmt.Printf("Register restful controller's route \"%s\" with method: %s\n", a.resources[i].route, method)
+			a.router.Handle(method, a.resources[i].route, a.resources[i].handler)
 		}
 	}
 }

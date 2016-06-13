@@ -1,7 +1,6 @@
 package clevergo
 
 import (
-	"fmt"
 	"github.com/clevergo/cache"
 	"github.com/clevergo/clevergo/utils/string"
 	"github.com/clevergo/log"
@@ -108,7 +107,6 @@ func Init() {
 
 		// Add FileTarget
 		logFile, err := log.OpenFile(path.Join(Configuration.logFilePath, Configuration.logFileName))
-		fmt.Printf("%v\n", path.Join(Configuration.logFilePath, Configuration.logFileName))
 		if err != nil {
 			panic(err.Error())
 		}

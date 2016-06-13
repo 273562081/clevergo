@@ -5,7 +5,7 @@ import (
 )
 
 type Controller interface {
-	Init(action *Action, ctx *Context)
+	Init(action Action, ctx *Context)
 	BeforeAction() bool
 	BeforeResponse()
 }

@@ -12,7 +12,7 @@ import (
 
 type WebController struct {
 	EnableLayout bool
-	Action       *Action // current action's info.
+	Action       Action // current action's info.
 	Context      *Context
 }
 
@@ -37,10 +37,10 @@ func (wc *WebController) Response() *Response {
 }
 
 func (wc *WebController) Info() *ControllerInfo {
-	return wc.Action.controller
+	return wc.Action.Controller()
 }
 
-func (wc *WebController) Init(action *Action, ctx *Context) {
+func (wc *WebController) Init(action Action, ctx *Context) {
 	wc.EnableLayout = true
 	wc.Action = action
 	wc.Context = ctx
@@ -50,7 +50,7 @@ func (wc *WebController) Init(action *Action, ctx *Context) {
 
 // Get session.
 func (wc *WebController) getSession() {
-	if (wc.Action.app.sessionStore != nil) && (wc.Context.Session == nil) {
+	if (wc.Action.App().sessionStore != nil) && (wc.Context.Session == nil) {
 		err := wc.Context.GetSession()
 		if err != nil {
 			panic(err)
@@ -61,7 +61,7 @@ func (wc *WebController) getSession() {
 // Save session.
 func (wc *WebController) saveSession() {
 	if wc.Context.Session != nil {
-		err := wc.Action.app.sessionStore.Save(wc.Context.Response.writer, wc.Context.Session)
+		err := wc.Action.App().sessionStore.Save(wc.Context.Response.writer, wc.Context.Session)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -76,8 +76,8 @@ func (wc *WebController) BeforeResponse() {
 	wc.saveSession()
 }
 
-func (wc *WebController) Actions() map[string]ActionRoute {
-	return map[string]ActionRoute{}
+func (wc *WebController) Actions() map[string]WebActionRoute {
+	return map[string]WebActionRoute{}
 }
 
 func (wc *WebController) Render(context ...interface{}) {
@@ -96,7 +96,7 @@ func (wc *WebController) RenderFile(name string, context ...interface{}) {
 	file := wc.getViewFile(name)
 
 	if wc.EnableLayout {
-		wc.Context.Response.body = mustache.RenderFileInLayout(file, wc.Action.controller.layout, context...)
+		wc.Context.Response.body = mustache.RenderFileInLayout(file, wc.Action.Controller().layout, context...)
 	} else {
 		wc.Context.Response.body = mustache.RenderFile(file, context...)
 	}
@@ -173,11 +173,11 @@ func (wc *WebController) RenderXml(v interface{}, header string) {
 
 func (wc *WebController) getViewFile(name string) string {
 	if len(name) == 0 {
-		name = wc.Action.prettyName + Configuration.viewSuffix
+		name = wc.Action.PrettyName() + Configuration.viewSuffix
 	} else {
 		name = name + Configuration.viewSuffix
 	}
-	return path.Join(wc.Action.controller.viewsPath, name)
+	return path.Join(wc.Action.Controller().viewsPath, name)
 }
 
 // Get view's path.

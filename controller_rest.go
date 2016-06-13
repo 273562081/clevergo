@@ -2,12 +2,14 @@ package clevergo
 
 import "github.com/clevergo/log"
 
+var RestHTTPMethods = map[string]string{"GET":"", "PATCH":"", "POST":"", "PUT":"", "DELETE":""}
+
 type RestController struct {
-	Action  *Action // current action's info.
+	Action  Action // current action's info.
 	Context *Context
 }
 
-func (rc *RestController) Init(action *Action, ctx *Context) {
+func (rc *RestController) Init(action Action, ctx *Context) {
 	rc.Action = action
 	rc.Context = ctx
 }
@@ -29,5 +31,12 @@ func (rc *RestController) Response() *Response {
 }
 
 func (rc *RestController) Info() *ControllerInfo {
-	return rc.Action.controller
+	return rc.Action.Controller()
+}
+
+func (rc *RestController) BeforeAction() bool {
+	return true
+}
+
+func (rc *RestController) BeforeResponse() {
 }
