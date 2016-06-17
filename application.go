@@ -3,6 +3,7 @@ package clevergo
 import (
 	"fmt"
 	"github.com/clevergo/cache"
+	"github.com/clevergo/jwt"
 	"github.com/clevergo/log"
 	"github.com/clevergo/session"
 	"github.com/julienschmidt/httprouter"
@@ -21,6 +22,7 @@ type Application struct {
 	sessionStore    session.Store
 	logger          *log.Logger
 	cache           *cache.RedisCache
+	jwt             *jwt.JWT
 }
 
 func NewApplication() *Application {
@@ -29,7 +31,7 @@ func NewApplication() *Application {
 		middlewares:     make([]Middleware, 0),
 		firstMiddleware: nil,
 		actions:         make([]*WebAction, 0),
-		resources:         make([]*RestAction, 0),
+		resources:       make([]*RestAction, 0),
 		sessionStore:    nil,
 		logger:          nil,
 		cache:           nil,
@@ -150,7 +152,7 @@ func (a *Application) RegisterRestController(route string, c Controller) {
 		method := ct.Method(i)
 
 		if _, ok := allowedMethods[strings.ToUpper(method.Name)]; ok {
-			err := resource.AddMethod(&RestMethod{Name:method.Name, Index:i})
+			err := resource.AddMethod(&RestMethod{Name: method.Name, Index: i})
 			if err != nil {
 				panic(err)
 			}
@@ -170,11 +172,11 @@ func (a *Application) Run() {
 	middlewaresLen := len(a.middlewares)
 	if middlewaresLen > 0 {
 		if middlewaresLen > 1 {
-			for i := 0; i < middlewaresLen - 1; i++ {
-				a.middlewares[i].SetNext(a.middlewares[i + 1])
+			for i := 0; i < middlewaresLen-1; i++ {
+				a.middlewares[i].SetNext(a.middlewares[i+1])
 			}
 		}
-		a.middlewares[0].SetFinal(a.middlewares[middlewaresLen - 1])
+		a.middlewares[0].SetFinal(a.middlewares[middlewaresLen-1])
 		a.firstMiddleware = a.middlewares[0]
 	}
 

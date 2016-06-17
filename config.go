@@ -3,6 +3,7 @@ package clevergo
 import (
 	"github.com/clevergo/cache"
 	"github.com/clevergo/ini"
+	"github.com/clevergo/jwt"
 	"github.com/clevergo/log"
 	"github.com/clevergo/session"
 	"strings"
@@ -36,6 +37,15 @@ type Config struct {
 
 	// View Configuration
 	viewSuffix string
+
+	// JSON WEB TOKEN Configuration
+	enableJWT        bool
+	JWT              *jwt.JWT
+	jwtRSAPublicKey  string
+	jwtRSAPrivateKey string
+	jwtHMACSecretKey string
+	jwtIssuer        string
+	jwtTTL           int64
 
 	// Session Configuration
 	enableSession bool
@@ -117,6 +127,32 @@ func (c *Config) Load(filename string) {
 	actionSuffix, err := section.GetString("action.suffix")
 	if err == nil {
 		c.actionSuffix = actionSuffix
+	}
+
+	// Get JWT configuration
+	enableJWT, err := section.GetBool("jwt.enable")
+	if err == nil {
+		c.enableJWT = enableJWT
+	}
+	jwtTTL, err := section.GetInt("jwt.ttl")
+	if err == nil {
+		c.jwtTTL = int64(jwtTTL)
+	}
+	jwtIssuer, err := section.GetString("jwt.issuer")
+	if err == nil {
+		c.jwtIssuer = jwtIssuer
+	}
+	jwtRSAPublicKey, err := section.GetString("jwt.rsa_public_key")
+	if err == nil {
+		c.jwtRSAPublicKey = jwtRSAPublicKey
+	}
+	jwtRSAPrivateKey, err := section.GetString("jwt.rsa_private_key")
+	if err == nil {
+		c.jwtRSAPrivateKey = jwtRSAPrivateKey
+	}
+	jwtHMACSecretKey, err := section.GetString("jwt.hmac_secret_key")
+	if err == nil {
+		c.jwtHMACSecretKey = jwtHMACSecretKey
 	}
 
 	// Get session configuration

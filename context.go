@@ -18,6 +18,7 @@ type Context struct {
 	Session  *session.Session
 	Log      *log.Log
 	Values   map[interface{}]interface{}
+	User     User
 }
 
 func NewContext(app *Application, rw http.ResponseWriter, r *http.Request, params httprouter.Params) *Context {
@@ -39,6 +40,10 @@ func (ctx *Context) GetSession() error {
 		ctx.Session, err = ctx.App.sessionStore.New(Configuration.sessionName)
 	}
 	return err
+}
+
+func (ctx *Context) GetUser() error {
+	return nil
 }
 
 func (ctx *Context) Flush() {

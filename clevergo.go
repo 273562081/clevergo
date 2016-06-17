@@ -1,8 +1,10 @@
 package clevergo
 
 import (
+	"crypto"
 	"github.com/clevergo/cache"
 	"github.com/clevergo/clevergo/utils/string"
+	"github.com/clevergo/jwt"
 	"github.com/clevergo/log"
 	"github.com/clevergo/session"
 	"github.com/julienschmidt/httprouter"
@@ -47,8 +49,17 @@ func init() {
 		// View configuration
 		viewSuffix: ".html",
 
+		// JSON WEB TOKEN Configuration
+		enableJWT:        true,
+		JWT:              nil,
+		jwtIssuer:        "CleverGO",
+		jwtTTL:           int64(3600 * 24 * 7),
+		jwtHMACSecretKey: stringutil.GenerateRandomString(32),
+		jwtRSAPrivateKey: "",
+		jwtRSAPublicKey:  "",
+
 		// Session configuration
-		enableSession: true,
+		enableSession: false,
 		sessionStore:  nil,
 		sessionName:   "GOSESSION",
 		sessionMaxAge: 10 * 24 * 3600,
@@ -135,6 +146,39 @@ func Init() {
 		}
 	}
 
+	// Initialize JWT.
+	if Configuration.enableJWT {
+		// Create JWT instance.
+		Configuration.JWT = jwt.NewJWT(Configuration.jwtIssuer, Configuration.jwtTTL)
+
+		// Add HMAC Algorithm.
+		hs256, err := jwt.NewHMACAlgorithm(crypto.SHA256, Configuration.jwtHMACSecretKey)
+		if err != nil {
+			panic(err)
+		}
+		Configuration.JWT.AddAlgorithm("HS256", hs256)
+
+		// Add RSA Algorithm.
+		var publicKey []byte
+		var privateKey []byte
+		// Read byte from file.
+		publicKey, err = jwt.ReadBytes(Configuration.jwtRSAPublicKey)
+		if err != nil {
+			panic(err)
+		}
+
+		privateKey, err = jwt.ReadBytes(Configuration.jwtRSAPrivateKey)
+		if err != nil {
+			panic(err)
+		}
+
+		rsa256, err := jwt.NewRSAAlgorithm(crypto.SHA256, publicKey, privateKey)
+		if err != nil {
+			panic(err)
+		}
+		Configuration.JWT.AddAlgorithm("RS256", rsa256)
+	}
+
 	// Initialize redis cache.
 	if Configuration.enableCache {
 		redisPool := cache.NewRedisPool(
@@ -184,6 +228,10 @@ func NewApp(domain string) *Application {
 
 	if Configuration.enableCache {
 		apps[domain].cache = Configuration.cache
+	}
+
+	if Configuration.enableJWT {
+		apps[domain].jwt = Configuration.JWT
 	}
 
 	return apps[domain]

@@ -2,7 +2,7 @@ package clevergo
 
 import "github.com/clevergo/log"
 
-var RestHTTPMethods = map[string]string{"GET":"", "PATCH":"", "POST":"", "PUT":"", "DELETE":""}
+var RestHTTPMethods = map[string]string{"GET": "", "PATCH": "", "POST": "", "PUT": "", "DELETE": ""}
 
 type RestController struct {
 	Action  Action // current action's info.
