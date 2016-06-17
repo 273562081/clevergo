@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	apps          Applications
+	apps Applications
 	Configuration *Config
 	defaultApp    *Application
 )
@@ -135,7 +135,7 @@ func Init() {
 
 			mailTarget := log.NewMailTarget(
 				Configuration.logMailLevel,
-				Configuration.logMailHost+":"+Configuration.logMailPort,
+				Configuration.logMailHost + ":" + Configuration.logMailPort,
 				Configuration.logMailFrom,
 				Configuration.logMailTo,
 				auth,
@@ -152,7 +152,7 @@ func Init() {
 		Configuration.JWT = jwt.NewJWT(Configuration.jwtIssuer, Configuration.jwtTTL)
 
 		// Add HMAC Algorithm.
-		hs256, err := jwt.NewHMACAlgorithm(crypto.SHA256, Configuration.jwtHMACSecretKey)
+		hs256, err := jwt.NewHMACAlgorithm(crypto.SHA256, []byte(Configuration.jwtHMACSecretKey))
 		if err != nil {
 			panic(err)
 		}
@@ -163,20 +163,16 @@ func Init() {
 		var privateKey []byte
 		// Read byte from file.
 		publicKey, err = jwt.ReadBytes(Configuration.jwtRSAPublicKey)
-		if err != nil {
-			panic(err)
+		if err == nil {
+			privateKey, err = jwt.ReadBytes(Configuration.jwtRSAPrivateKey)
+			if err == nil {
+				rsa256, err := jwt.NewRSAAlgorithm(crypto.SHA256, publicKey, privateKey)
+				if err != nil {
+					panic(err)
+				}
+				Configuration.JWT.AddAlgorithm("RS256", rsa256)
+			}
 		}
-
-		privateKey, err = jwt.ReadBytes(Configuration.jwtRSAPrivateKey)
-		if err != nil {
-			panic(err)
-		}
-
-		rsa256, err := jwt.NewRSAAlgorithm(crypto.SHA256, publicKey, privateKey)
-		if err != nil {
-			panic(err)
-		}
-		Configuration.JWT.AddAlgorithm("RS256", rsa256)
 	}
 
 	// Initialize redis cache.
@@ -287,7 +283,7 @@ func PrettyName(name string) string {
 	for i := 1; i < len(name); i++ {
 		c := name[i]
 		if ('A' <= c) && (c <= 'Z') {
-			prettyRoute += "-" + string(rune(int(c)+32))
+			prettyRoute += "-" + string(rune(int(c) + 32))
 		} else {
 			prettyRoute += string(c)
 		}
@@ -304,7 +300,7 @@ func getControllerName(name string) string {
 		}
 
 		prefixLen := len(Configuration.controllerPrefix)
-		name = stringutil.SubString(name, prefixLen, len(name)-prefixLen)
+		name = stringutil.SubString(name, prefixLen, len(name) - prefixLen)
 	}
 	// remove suffix.
 	if len(Configuration.controllerSuffix) > 0 {
@@ -325,7 +321,7 @@ func getActionName(name string) string {
 	if len(Configuration.actionPrefix) > 0 {
 		if 0 == strings.Index(name, Configuration.actionPrefix) {
 			prefixLen := len(Configuration.actionPrefix)
-			name = stringutil.SubString(name, prefixLen, len(name)-prefixLen)
+			name = stringutil.SubString(name, prefixLen, len(name) - prefixLen)
 		}
 	}
 	// remove suffix.
