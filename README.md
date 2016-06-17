@@ -3,3 +3,4 @@ CleverGO is a simple, high performance and secure web framework for Go. This pro
 
 [![Join the chat at https://gitter.im/clevergo/clevergo](https://badges.gitter.im/clevergo/clevergo.svg)](https://gitter.im/clevergo/clevergo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/clevergo/clevergo.svg?branch=master)](https://travis-ci.org/clevergo/clevergo)
+[![GoDoc](https://godoc.org/github.com/clevergo/clevergo?status.svg)](https://godoc.org/github.com/clevergo/clevergo)
