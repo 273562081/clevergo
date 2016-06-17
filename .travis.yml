@@ -4,5 +4,14 @@ go:
  - 1.6
  - tip
 
+install:
+- go get github.com/clevergo/cache
+- go get github.com/julienschmidt/httprouter
+- go get github.com/clevergo/ini
+- go get github.com/clevergo/jwt
+- go get github.com/clevergo/log
+- go get github.com/hoisie/mustache
+- go get github.com/clevergo/session
+
 script:
  - go test -v ./...
