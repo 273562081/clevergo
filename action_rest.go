@@ -2,7 +2,7 @@ package clevergo
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/pkg/errors"
+	"errors"
 	"net/http"
 	"reflect"
 	"strings"
