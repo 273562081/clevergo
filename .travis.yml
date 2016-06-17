@@ -13,5 +13,8 @@ install:
 - go get github.com/hoisie/mustache
 - go get github.com/clevergo/session
 
+services:
+  - redis-server
+
 script:
  - go test -v ./...
