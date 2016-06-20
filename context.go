@@ -2,6 +2,7 @@ package clevergo
 
 import (
 	"fmt"
+	"github.com/clevergo/jwt"
 	"github.com/clevergo/log"
 	"github.com/clevergo/session"
 	"github.com/julienschmidt/httprouter"
@@ -11,25 +12,27 @@ import (
 )
 
 type Context struct {
-	App      *Application
-	Response *Response
-	Request  *Request
-	Params   Params
-	Session  *session.Session
-	Log      *log.Log
-	Values   map[interface{}]interface{}
-	User     User
+	App             *Application                // Application.
+	Response        *Response                   // Response.
+	Request         *Request                    // Request.
+	Params          Params                      // URL params.
+	Session         *session.Session            // Session.
+	Log             *log.Log                    // Log.
+	Values          map[interface{}]interface{} // Share data of middlewares.
+	Token           *jwt.Token                  // JWT(JSON WEB TOKEN).
+	SkipMiddlewares SkipMiddlewares             // List of middlewares those can be skip.
 }
 
 func NewContext(app *Application, rw http.ResponseWriter, r *http.Request, params httprouter.Params) *Context {
 	r.ParseForm()
 	return &Context{
-		App:      app,
-		Response: NewResponse(rw),
-		Request:  NewRequest(r),
-		Params:   NewParams(params),
-		Session:  nil,
-		Values:   make(map[interface{}]interface{}, 0),
+		App:             app,
+		Response:        NewResponse(rw),
+		Request:         NewRequest(r),
+		Params:          NewParams(params),
+		Session:         nil,
+		Values:          make(map[interface{}]interface{}, 0),
+		SkipMiddlewares: nil,
 	}
 }
 
@@ -40,10 +43,6 @@ func (ctx *Context) GetSession() error {
 		ctx.Session, err = ctx.App.sessionStore.New(Configuration.sessionName)
 	}
 	return err
-}
-
-func (ctx *Context) GetUser() error {
-	return nil
 }
 
 func (ctx *Context) Flush() {

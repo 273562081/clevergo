@@ -9,15 +9,16 @@ import (
 
 type WebAction struct {
 	BaseMiddleware
-	app        *Application      // action's application.
-	route      string            // action's route.
-	methods    []string          // action's allowed methods.
-	fullName   string            // action's full name.
-	name       string            // action's name.
-	prettyName string            // action's pretty name.
-	index      int               // action's index of controller methods.
-	controller *ControllerInfo   // action's controller.
-	handler    httprouter.Handle // action's handle.
+	app             *Application      // action's application.
+	route           string            // action's route.
+	methods         []string          // action's allowed methods.
+	fullName        string            // action's full name.
+	name            string            // action's name.
+	prettyName      string            // action's pretty name.
+	index           int               // action's index of controller methods.
+	controller      *ControllerInfo   // action's controller.
+	handler         httprouter.Handle // action's handle.
+	skipMiddlewares SkipMiddlewares   // the middleware those can be skipped.
 }
 
 func NewWebAction(app *Application, route string, methods []string, name string, index int) (*WebAction, error) {
@@ -26,13 +27,14 @@ func NewWebAction(app *Application, route string, methods []string, name string,
 	}
 
 	ai := &WebAction{
-		app:        app,
-		route:      route,
-		methods:    methods,
-		fullName:   name,
-		index:      index,
-		controller: nil,
-		handler:    nil,
+		app:             app,
+		route:           route,
+		methods:         methods,
+		fullName:        name,
+		index:           index,
+		controller:      nil,
+		handler:         nil,
+		skipMiddlewares: make(SkipMiddlewares, 0),
 	}
 
 	ai.name = getActionName(name)
@@ -86,23 +88,24 @@ func (wa *WebAction) Handle(ctx *Context) {
 	return
 }
 
-func GenerateWebActionHandler(a *WebAction) httprouter.Handle {
+func GenerateWebActionHandler(wa *WebAction) httprouter.Handle {
 	return func(rw http.ResponseWriter, r *http.Request, params httprouter.Params) {
-		ctx := NewContext(a.app, rw, r, params)
+		ctx := NewContext(wa.app, rw, r, params)
+		ctx.SkipMiddlewares = wa.skipMiddlewares
 
 		defer ctx.Flush()
 
 		if Configuration.enableLog {
-			ctx.Log = a.app.logger.NewLog()
+			ctx.Log = wa.app.logger.NewLog()
 			defer ctx.Log.Flush()
 		}
 
-		if a.app.firstMiddleware != nil {
-			handler := a.app.firstMiddleware
-			handler.Final().SetNext(a)
+		if wa.app.firstMiddleware != nil {
+			handler := wa.app.firstMiddleware
+			handler.Final().SetNext(wa)
 			handler.Handle(ctx)
 		} else {
-			a.Handle(ctx)
+			wa.Handle(ctx)
 		}
 		return
 	}

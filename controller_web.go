@@ -89,7 +89,7 @@ func (wc *WebController) RenderData(data string, context ...interface{}) {
 	wc.Context.Response.body = mustache.Render(data, context...)
 }
 
-// @param name the view file name
+// @param name the view file name.
 func (wc *WebController) RenderFile(name string, context ...interface{}) {
 	wc.Context.Response.SetHtmlHeader()
 
@@ -112,45 +112,12 @@ func (wc *WebController) RenderPartialFile(name string, context ...interface{}) 
 	wc.Context.Response.body = mustache.RenderFile(file, context...)
 }
 
-// the v will be responsed directly if type of v is string
-func (wc *WebController) RenderJson(v interface{}) {
-	wc.Context.Response.SetJsonHeader()
-
-	if value, ok := v.(string); ok {
-		wc.Context.Response.body = value
-	} else {
-		json, err := json.Marshal(v)
-		if err != nil {
-			// wc.Response.InternalServerError(err.Error())
-			return
-		}
-		wc.Context.Response.body += string(json)
-	}
-}
-
-// the v will be responsed directly if type of v is string
-func (wc *WebController) RenderJsonp(v interface{}, callback string) {
-	wc.Context.Response.SetJsonpHeader()
-
-	if value, ok := v.(string); ok {
-		wc.Context.Response.body = value
-	} else {
-
-		json, err := json.Marshal(v)
-		if err != nil {
-			// wc.Response.InternalServerError(err.Error())
-			return
-		}
-		wc.Context.Response.body += callback + "(" + string(json) + ")"
-	}
-}
-
 func (wc *WebController) RenderText(text string) {
 	wc.Context.Response.SetHtmlHeader()
 	wc.Context.Response.body = text
 }
 
-// the v will be responsed directly if type of v is string
+// the v will be responsed directly if type of v is string.
 func (wc *WebController) RenderXml(v interface{}, header string) {
 	wc.Context.Response.SetXmlHeader()
 
@@ -194,4 +161,8 @@ func (wc *WebController) ViewPath() string {
 // For example, views's path: /app/views, the layout's path: /apps/views/layouts/main.html.
 func (wc *WebController) Layout() (bool, string) {
 	return true, "main.html"
+}
+
+func (wc *WebController) SkipMiddlewares() map[string]SkipMiddlewares {
+	return map[string]SkipMiddlewares{}
 }

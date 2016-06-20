@@ -2,7 +2,7 @@ package clevergo
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"errors"
+	"github.com/pkg/errors"
 	"net/http"
 	"reflect"
 	"strings"
@@ -18,8 +18,9 @@ type RestAction struct {
 }
 
 type RestMethod struct {
-	Name  string
-	Index int
+	Name            string
+	Index           int
+	skipMiddlewares map[string]bool // the middleware those can be skipped.
 }
 
 func (ra *RestAction) Controller() *ControllerInfo {
@@ -89,6 +90,7 @@ func (ra *RestAction) Handle(ctx *Context) {
 func GenerateRestActionHandler(ra *RestAction) httprouter.Handle {
 	return func(rw http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		ctx := NewContext(ra.app, rw, r, params)
+		ctx.SkipMiddlewares = ra.methods[ctx.Request.Method].skipMiddlewares
 
 		defer ctx.Flush()
 

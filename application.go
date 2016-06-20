@@ -38,6 +38,10 @@ func NewApplication() *Application {
 	}
 }
 
+func (a *Application) JWT() *jwt.JWT {
+	return a.jwt
+}
+
 func (a *Application) SetPanicHandler(handler func(http.ResponseWriter, *http.Request, interface{})) {
 	a.router.PanicHandler = handler
 }
@@ -66,13 +70,13 @@ func (a *Application) AddMiddleware(middleware Middleware) {
 	a.middlewares = append(a.middlewares, middleware)
 }
 
-func (a *Application) RegisterWebControllers(controllers ...Controller) {
+func (a *Application) RegisterWebControllers(controllers ...WebControllerInterface) {
 	for i := 0; i < len(controllers); i++ {
 		a.RegisterWebController(controllers[i])
 	}
 }
 
-func (a *Application) RegisterWebController(c Controller) {
+func (a *Application) RegisterWebController(c WebControllerInterface) {
 	ct := reflect.TypeOf(c)
 	cv := reflect.ValueOf(c)
 
@@ -104,13 +108,26 @@ func (a *Application) RegisterWebController(c Controller) {
 	}
 
 	// Get actions's route.
-	actionsRoute := make(map[string]WebActionRoute)
+	actionsRoute := make(map[string]WebActionRoute, 0)
 	actionsMethod := cv.MethodByName("Actions")
 	if actionsMethod.IsValid() {
 		values := actionsMethod.Call([]reflect.Value{})
 		for i := 0; i < len(values); i++ {
 			if value, ok := values[i].Interface().(map[string]WebActionRoute); ok {
 				actionsRoute = value
+			}
+			break
+		}
+	}
+
+	// Get skip middlewares.
+	skipMiddlewares := make(map[string]SkipMiddlewares, 0)
+	skipMiddlewaresMethod := cv.MethodByName("SkipMiddlewares")
+	if skipMiddlewaresMethod.IsValid() {
+		values := skipMiddlewaresMethod.Call([]reflect.Value{})
+		for i := 0; i < len(values); i++ {
+			if value, ok := values[i].Interface().(map[string]SkipMiddlewares); ok {
+				skipMiddlewares = value
 			}
 			break
 		}
@@ -125,13 +142,18 @@ func (a *Application) RegisterWebController(c Controller) {
 				panic(err)
 			}
 
+			// Set skip middlewares.
+			if middlewares, ok := skipMiddlewares[method.Name]; ok {
+				action.skipMiddlewares = middlewares
+			}
+
 			action.controller = ci
 			a.actions = append(a.actions, action)
 		}
 	}
 }
 
-func (a *Application) RegisterRestController(route string, c Controller) {
+func (a *Application) RegisterRestController(route string, c RestControllerInterface) {
 	ct := reflect.TypeOf(c)
 	cv := reflect.ValueOf(c)
 
@@ -148,11 +170,33 @@ func (a *Application) RegisterRestController(route string, c Controller) {
 	resource := NewRestAction(a, route)
 	allowedMethods := RestHTTPMethods
 
+	// Get skip middlewares.
+	skipMiddlewares := make(map[string]SkipMiddlewares, 0)
+	skipMiddlewaresMethod := cv.MethodByName("SkipMiddlewares")
+	if skipMiddlewaresMethod.IsValid() {
+		values := skipMiddlewaresMethod.Call([]reflect.Value{})
+		for i := 0; i < len(values); i++ {
+			if value, ok := values[i].Interface().(map[string]SkipMiddlewares); ok {
+				skipMiddlewares = value
+			}
+			break
+		}
+	}
+
 	for i := 0; i < ct.NumMethod(); i++ {
 		method := ct.Method(i)
 
 		if _, ok := allowedMethods[strings.ToUpper(method.Name)]; ok {
-			err := resource.AddMethod(&RestMethod{Name: method.Name, Index: i})
+			middlewares := make(SkipMiddlewares, 0)
+			if v, ok := skipMiddlewares[strings.ToUpper(method.Name)]; ok {
+				middlewares = v
+			}
+
+			err := resource.AddMethod(&RestMethod{
+				Name:            method.Name,
+				Index:           i,
+				skipMiddlewares: middlewares,
+			})
 			if err != nil {
 				panic(err)
 			}

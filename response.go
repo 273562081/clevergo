@@ -51,3 +51,11 @@ func (r *Response) Body() string {
 func (r *Response) SetBody(body string) {
 	r.body = body
 }
+
+func (r *Response) Unauthorized(args ...string) {
+	r.SetStatus(http.StatusUnauthorized)
+	if len(args) > 0 {
+		r.SetBody(args[0])
+	}
+	r.SetBody(http.StatusText(http.StatusUnauthorized))
+}

@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	apps Applications
+	apps          Applications
 	Configuration *Config
 	defaultApp    *Application
 )
@@ -135,7 +135,7 @@ func Init() {
 
 			mailTarget := log.NewMailTarget(
 				Configuration.logMailLevel,
-				Configuration.logMailHost + ":" + Configuration.logMailPort,
+				Configuration.logMailHost+":"+Configuration.logMailPort,
 				Configuration.logMailFrom,
 				Configuration.logMailTo,
 				auth,
@@ -283,7 +283,7 @@ func PrettyName(name string) string {
 	for i := 1; i < len(name); i++ {
 		c := name[i]
 		if ('A' <= c) && (c <= 'Z') {
-			prettyRoute += "-" + string(rune(int(c) + 32))
+			prettyRoute += "-" + string(rune(int(c)+32))
 		} else {
 			prettyRoute += string(c)
 		}
@@ -300,7 +300,7 @@ func getControllerName(name string) string {
 		}
 
 		prefixLen := len(Configuration.controllerPrefix)
-		name = stringutil.SubString(name, prefixLen, len(name) - prefixLen)
+		name = stringutil.SubString(name, prefixLen, len(name)-prefixLen)
 	}
 	// remove suffix.
 	if len(Configuration.controllerSuffix) > 0 {
@@ -321,7 +321,7 @@ func getActionName(name string) string {
 	if len(Configuration.actionPrefix) > 0 {
 		if 0 == strings.Index(name, Configuration.actionPrefix) {
 			prefixLen := len(Configuration.actionPrefix)
-			name = stringutil.SubString(name, prefixLen, len(name) - prefixLen)
+			name = stringutil.SubString(name, prefixLen, len(name)-prefixLen)
 		}
 	}
 	// remove suffix.

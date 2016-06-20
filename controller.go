@@ -4,10 +4,21 @@ import (
 	"reflect"
 )
 
-type Controller interface {
+type WebControllerInterface interface {
 	Init(action Action, ctx *Context)
 	BeforeAction() bool
 	BeforeResponse()
+	SkipMiddlewares() map[string]SkipMiddlewares
+	Actions() map[string]WebActionRoute
+	Layout() (bool, string)
+	ViewPath() string
+}
+
+type RestControllerInterface interface {
+	Init(action Action, ctx *Context)
+	BeforeAction() bool
+	BeforeResponse()
+	SkipMiddlewares() map[string]SkipMiddlewares
 }
 
 type ControllerInfo struct {
