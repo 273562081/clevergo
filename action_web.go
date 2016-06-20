@@ -10,7 +10,7 @@ import (
 type WebAction struct {
 	BaseMiddleware
 	app             *Application      // action's application.
-	route           string            // action's route.
+	routes          []string          // action's route.
 	methods         []string          // action's allowed methods.
 	fullName        string            // action's full name.
 	name            string            // action's name.
@@ -21,14 +21,14 @@ type WebAction struct {
 	skipMiddlewares SkipMiddlewares   // the middleware those can be skipped.
 }
 
-func NewWebAction(app *Application, route string, methods []string, name string, index int) (*WebAction, error) {
+func NewWebAction(app *Application, routes []string, methods []string, name string, index int) (*WebAction, error) {
 	if ('A' > name[0]) || (name[0] > 'Z') {
 		return nil, errors.New("The action's name is invalid: , it's first charater must be a capital letter." + name)
 	}
 
 	ai := &WebAction{
 		app:             app,
-		route:           route,
+		routes:          routes,
 		methods:         methods,
 		fullName:        name,
 		index:           index,
@@ -112,18 +112,18 @@ func GenerateWebActionHandler(wa *WebAction) httprouter.Handle {
 }
 
 type WebActionRoute struct {
-	Route   string
+	Routes  []string
 	Methods []string
 }
 
-func NewWebActionRoute(route string, args ...[]string) WebActionRoute {
+func NewWebActionRoute(routes []string, args ...[]string) WebActionRoute {
 	methods := []string{"GET", "POST"}
 	if len(args) > 0 {
 		methods = args[0]
 	}
 
 	return WebActionRoute{
-		Route:   route,
+		Routes:  routes,
 		Methods: methods,
 	}
 }

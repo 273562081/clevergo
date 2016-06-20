@@ -134,7 +134,7 @@ func (a *Application) RegisterWebController(c WebControllerInterface) {
 	for i := 0; i < ct.NumMethod(); i++ {
 		method := ct.Method(i)
 		if v, ok := actionsRoute[method.Name]; ok {
-			action, err := NewWebAction(a, v.Route, v.Methods, method.Name, i)
+			action, err := NewWebAction(a, v.Routes, v.Methods, method.Name, i)
 
 			if err != nil {
 				panic(err)
@@ -229,9 +229,12 @@ func (a *Application) Run() {
 	// Register web controller's action.
 	for i := 0; i < len(a.actions); i++ {
 		a.actions[i].handler = GenerateWebActionHandler(a.actions[i])
-		for j := 0; j < len(a.actions[i].methods); j++ {
-			fmt.Printf("Register web controller's route \"%s\" with method: %s\n", a.actions[i].route, a.actions[i].methods[j])
-			a.router.Handle(a.actions[i].methods[j], a.actions[i].route, a.actions[i].handler)
+		for j := 0; j < len(a.actions[i].routes); j++ {
+			route := a.actions[i].routes[j]
+			for k := 0; k < len(a.actions[i].methods); k++ {
+				fmt.Printf("Register web controller's route \"%s\" with method: %s\n", route, a.actions[i].methods[k])
+				a.router.Handle(a.actions[i].methods[k], route, a.actions[i].handler)
+			}
 		}
 	}
 

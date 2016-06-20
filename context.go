@@ -50,11 +50,18 @@ func (ctx *Context) GetSession() error {
 }
 
 func (ctx *Context) Flush() {
-	// send response status and headers.
-	ctx.Response.writer.WriteHeader(ctx.Response.status)
+	if !ctx.Response.cancel {
+		// send response status and headers.
+		ctx.Response.writer.WriteHeader(ctx.Response.status)
 
-	// send response body.
-	fmt.Fprint(ctx.Response.writer, ctx.Response.body)
+		// send response body.
+		fmt.Fprint(ctx.Response.writer, ctx.Response.body)
+	}
+}
+
+func (ctx *Context) Redirect(url string) {
+	ctx.Response.cancel = true
+	http.Redirect(ctx.Response.writer, ctx.Request.Request, url, http.StatusFound)
 }
 
 type Params struct {

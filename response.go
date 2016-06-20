@@ -6,6 +6,7 @@ type Response struct {
 	writer http.ResponseWriter
 	status int
 	body   string
+	cancel bool
 }
 
 func NewResponse(rw http.ResponseWriter) *Response {
@@ -13,6 +14,7 @@ func NewResponse(rw http.ResponseWriter) *Response {
 		writer: rw,
 		status: http.StatusOK,
 		body:   "",
+		cancel: false,
 	}
 }
 
