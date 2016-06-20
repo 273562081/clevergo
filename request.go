@@ -13,6 +13,15 @@ func NewRequest(r *http.Request) *Request {
 	return &Request{r}
 }
 
+// Get simulation method.
+func (r *Request) SimulateMethod(name string) string {
+	method := r.FormValue(name)
+	if len(method) == 0 {
+		method = r.PostFormValue(method)
+	}
+	return method
+}
+
 // Returns a boolean indicating whether r is a GET request.
 func (r *Request) IsGet() bool {
 	return strings.EqualFold("GET", r.Method)

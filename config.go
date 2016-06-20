@@ -34,6 +34,7 @@ type Config struct {
 	// Action Configuration
 	actionPrefix string
 	actionSuffix string
+	actionMethod string
 
 	// View Configuration
 	viewSuffix string

@@ -59,3 +59,11 @@ func (r *Response) Unauthorized(args ...string) {
 	}
 	r.SetBody(http.StatusText(http.StatusUnauthorized))
 }
+
+func (r *Response) MethodNotAllowed(args ...string) {
+	r.SetStatus(http.StatusMethodNotAllowed)
+	if len(args) > 0 {
+		r.SetBody(args[0])
+	}
+	r.SetBody(http.StatusText(http.StatusMethodNotAllowed))
+}

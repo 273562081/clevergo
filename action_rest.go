@@ -76,7 +76,22 @@ func (ra *RestAction) Handle(ctx *Context) {
 	}
 
 	// Invoke controller's action.
-	actionMethod := cv.Method(ra.methods[ctx.Request.Method].Index) // MethodByIndex is faster than MethodByName.
+	var methodIndex int
+	// Get request method name.
+	method := ctx.Request.SimulateMethod(Configuration.actionMethod)
+	if len(method) > 0 {
+		method = strings.ToUpper(method)
+		if mv, ok := ra.methods[method]; ok {
+			methodIndex = mv.Index
+		} else {
+			ctx.Response.MethodNotAllowed()
+			return
+		}
+	} else {
+		methodIndex = ra.methods[ctx.Request.Method].Index
+	}
+
+	actionMethod := cv.Method(methodIndex) // MethodByIndex is faster than MethodByName.
 	// actionMethod := cv.MethodByName(a.fullName)
 	actionMethod.Call([]reflect.Value{})
 

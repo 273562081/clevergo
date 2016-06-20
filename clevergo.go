@@ -45,6 +45,7 @@ func init() {
 		// Action configuration
 		actionPrefix: "Action",
 		actionSuffix: "",
+		actionMethod: "_method",
 
 		// View configuration
 		viewSuffix: ".html",
