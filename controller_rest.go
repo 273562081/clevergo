@@ -2,6 +2,7 @@ package clevergo
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"github.com/clevergo/log"
 )
 
@@ -49,27 +50,27 @@ func (rc *RestController) SkipMiddlewares() map[string]SkipMiddlewares {
 }
 
 // the v will be responsed directly if type of v is string.
-func (wc *WebController) RenderJson(v interface{}) {
-	wc.Context.Response.SetJsonHeader()
+func (rc *RestController) RenderJson(v interface{}) {
+	rc.Context.Response.SetJsonHeader()
 
 	if value, ok := v.(string); ok {
-		wc.Context.Response.body = value
+		rc.Context.Response.body = value
 	} else {
 		json, err := json.Marshal(v)
 		if err != nil {
 			// wc.Response.InternalServerError(err.Error())
 			return
 		}
-		wc.Context.Response.body += string(json)
+		rc.Context.Response.body += string(json)
 	}
 }
 
 // the v will be responsed directly if type of v is string.
-func (wc *WebController) RenderJsonp(v interface{}, callback string) {
-	wc.Context.Response.SetJsonpHeader()
+func (rc *RestController) RenderJsonp(v interface{}, callback string) {
+	rc.Context.Response.SetJsonpHeader()
 
 	if value, ok := v.(string); ok {
-		wc.Context.Response.body = value
+		rc.Context.Response.body = value
 	} else {
 
 		json, err := json.Marshal(v)
@@ -77,6 +78,27 @@ func (wc *WebController) RenderJsonp(v interface{}, callback string) {
 			// wc.Response.InternalServerError(err.Error())
 			return
 		}
-		wc.Context.Response.body += callback + "(" + string(json) + ")"
+		rc.Context.Response.body += callback + "(" + string(json) + ")"
+	}
+}
+
+// the v will be responsed directly if type of v is string.
+func (rc *RestController) RenderXml(v interface{}, header string) {
+	rc.Context.Response.SetXmlHeader()
+
+	if value, ok := v.(string); ok {
+		rc.Context.Response.body = value
+	} else {
+		byteXML, err := xml.MarshalIndent(v, "", `   `)
+		if err != nil {
+			//wc.Response.InternalServerError(err.Error())
+			return
+		}
+
+		if len(header) == 0 {
+			header = xml.Header
+		}
+
+		rc.Context.Response.body = header + string(byteXML)
 	}
 }

@@ -112,6 +112,39 @@ func (wc *WebController) RenderPartialFile(name string, context ...interface{}) 
 	wc.Context.Response.body = mustache.RenderFile(file, context...)
 }
 
+// the v will be responsed directly if type of v is string.
+func (wc *WebController) RenderJson(v interface{}) {
+	wc.Context.Response.SetJsonHeader()
+
+	if value, ok := v.(string); ok {
+		wc.Context.Response.body = value
+	} else {
+		json, err := json.Marshal(v)
+		if err != nil {
+			// wc.Response.InternalServerError(err.Error())
+			return
+		}
+		wc.Context.Response.body += string(json)
+	}
+}
+
+// the v will be responsed directly if type of v is string.
+func (wc *WebController) RenderJsonp(v interface{}, callback string) {
+	wc.Context.Response.SetJsonpHeader()
+
+	if value, ok := v.(string); ok {
+		wc.Context.Response.body = value
+	} else {
+
+		json, err := json.Marshal(v)
+		if err != nil {
+			// wc.Response.InternalServerError(err.Error())
+			return
+		}
+		wc.Context.Response.body += callback + "(" + string(json) + ")"
+	}
+}
+
 func (wc *WebController) RenderText(text string) {
 	wc.Context.Response.SetHtmlHeader()
 	wc.Context.Response.body = text
