@@ -19,14 +19,16 @@ var (
 	apps          Applications
 	Configuration *Config
 	defaultApp    *Application
+	goPath        string
+	srcPath       string
 )
 
 func init() {
-	goPath := os.Getenv("GOPATH")
+	goPath = os.Getenv("GOPATH")
 	if len(goPath) == 0 {
 		panic("GOPATH is not set.")
 	}
-	srcPath := path.Join(goPath, "src")
+	srcPath = path.Join(goPath, "src")
 
 	Configuration = &Config{
 		goPath:  goPath,
@@ -110,6 +112,9 @@ func LoadConfig(filename string) {
 }
 
 func Init() {
+	// Check configuration.
+	checkConfiguration()
+
 	// Initialize logger.
 	if Configuration.enableLog {
 		Configuration.logger = log.NewLogger(
@@ -207,6 +212,12 @@ func Init() {
 		Configuration.sessionStore = store
 	}
 
+}
+
+func checkConfiguration() {
+	if len(Configuration.actionPrefix) == 0 && len(Configuration.actionSuffix) == 0 {
+		panic("You should set action's prefix or suffix.")
+	}
 }
 
 func NewApp(domain string) *Application {
@@ -335,4 +346,12 @@ func getActionName(name string) string {
 	}
 
 	return name
+}
+
+func GoPath() string {
+	return goPath
+}
+
+func SrcPath() string {
+	return srcPath
 }

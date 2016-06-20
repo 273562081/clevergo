@@ -110,7 +110,9 @@ func (a *Application) RegisterWebController(c WebControllerInterface) {
 		values := actionsMethod.Call([]reflect.Value{})
 		for i := 0; i < len(values); i++ {
 			if value, ok := values[i].Interface().(map[string]WebActionRoute); ok {
-				actionsRoute = value
+				for k, v := range value {
+					actionsRoute[Configuration.actionPrefix+k+Configuration.actionSuffix] = v
+				}
 			}
 			break
 		}
@@ -205,6 +207,10 @@ func (a *Application) RegisterRestController(route string, c RestControllerInter
 		resource.controller = ci
 		a.resources = append(a.resources, resource)
 	}
+}
+
+func (a *Application) RegisterStaticResources(route, path string) {
+	a.router.ServeFiles("/"+route+"/*filepath", http.Dir(path))
 }
 
 func (a *Application) Run() {
