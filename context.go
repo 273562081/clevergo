@@ -12,7 +12,7 @@ import (
 )
 
 type Context struct {
-	App             *Application                // Application.
+	app             *Application                // Application.
 	Response        *Response                   // Response.
 	Request         *Request                    // Request.
 	Params          Params                      // URL params.
@@ -26,7 +26,7 @@ type Context struct {
 func NewContext(app *Application, rw http.ResponseWriter, r *http.Request, params httprouter.Params) *Context {
 	r.ParseForm()
 	return &Context{
-		App:             app,
+		app:             app,
 		Response:        NewResponse(rw),
 		Request:         NewRequest(r),
 		Params:          NewParams(params),
@@ -36,11 +36,15 @@ func NewContext(app *Application, rw http.ResponseWriter, r *http.Request, param
 	}
 }
 
+func (ctx *Context) JWT() *jwt.JWT {
+	return ctx.app.jwt
+}
+
 func (ctx *Context) GetSession() error {
 	var err error
-	ctx.Session, err = ctx.App.sessionStore.Get(ctx.Request, Configuration.sessionName)
+	ctx.Session, err = ctx.app.sessionStore.Get(ctx.Request, Configuration.sessionName)
 	if err != nil {
-		ctx.Session, err = ctx.App.sessionStore.New(Configuration.sessionName)
+		ctx.Session, err = ctx.app.sessionStore.New(Configuration.sessionName)
 	}
 	return err
 }

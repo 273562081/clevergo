@@ -3,6 +3,8 @@ package clevergo
 import (
 	"encoding/json"
 	"encoding/xml"
+	"github.com/clevergo/cache"
+	"github.com/clevergo/jwt"
 	"github.com/clevergo/log"
 )
 
@@ -18,8 +20,12 @@ func (rc *RestController) Init(action Action, ctx *Context) {
 	rc.Context = ctx
 }
 
-func (rc *RestController) App() *Application {
-	return rc.Context.App
+func (rc *RestController) Cache() *cache.RedisCache {
+	return rc.Context.app.cache
+}
+
+func (rc *RestController) JWT() *jwt.JWT {
+	return rc.Context.app.jwt
 }
 
 func (rc *RestController) Log() *log.Log {

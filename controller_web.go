@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"github.com/clevergo/cache"
+	"github.com/clevergo/jwt"
 	"github.com/clevergo/log"
 	"github.com/clevergo/session"
 	"github.com/hoisie/mustache"
@@ -16,8 +18,12 @@ type WebController struct {
 	Context      *Context
 }
 
-func (wc *WebController) App() *Application {
-	return wc.Context.App
+func (wc *WebController) Cache() *cache.RedisCache {
+	return wc.Context.app.cache
+}
+
+func (wc *WebController) JWT() *jwt.JWT {
+	return wc.Context.app.jwt
 }
 
 func (wc *WebController) Session() *session.Session {

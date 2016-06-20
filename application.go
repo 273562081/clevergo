@@ -38,10 +38,6 @@ func NewApplication() *Application {
 	}
 }
 
-func (a *Application) JWT() *jwt.JWT {
-	return a.jwt
-}
-
 func (a *Application) SetPanicHandler(handler func(http.ResponseWriter, *http.Request, interface{})) {
 	a.router.PanicHandler = handler
 }

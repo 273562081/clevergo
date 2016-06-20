@@ -54,7 +54,7 @@ func (jm *JWTMiddleware) Handle(ctx *clevergo.Context) {
 	}
 
 	// Get JWT by raw token
-	token, err := jwt.NewTokenByRaw(ctx.App.JWT(), rawToken)
+	token, err := jwt.NewTokenByRaw(ctx.JWT(), rawToken)
 	if err != nil {
 		ctx.Response.Unauthorized(err.Error())
 		return
