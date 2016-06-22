@@ -42,7 +42,7 @@ func (ctx *Context) JWT() *jwt.JWT {
 
 func (ctx *Context) GetSession() error {
 	var err error
-	ctx.Session, err = ctx.app.sessionStore.Get(ctx.Request, Configuration.sessionName)
+	ctx.Session, err = ctx.app.sessionStore.Get(ctx.Request.Request, Configuration.sessionName)
 	if err != nil {
 		ctx.Session, err = ctx.app.sessionStore.New(Configuration.sessionName)
 	}
