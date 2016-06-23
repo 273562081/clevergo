@@ -8,6 +8,8 @@ import (
 	"io"
 )
 
+var StdChars = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+
 // Return part of a string.
 func SubString(s string, start, length int) string {
 	rs := []rune(s)
@@ -22,7 +24,6 @@ func SubString(s string, start, length int) string {
 	if start > end {
 		start, end = end, start
 	}
-
 	if start < 0 {
 		start = 0
 	}
@@ -64,16 +65,58 @@ func LowerFirst(s string) string {
 
 // Generate random string.
 // @length length of random string.
-func GenerateRandomString(len int) string {
-	return string(GenerateRandomByte(len))
+func GenerateRandomString(length int) string {
+	return string(GenerateRandomByte(length))
 }
 
 // Generate random []byte.
 // @length length of []byte.
-func GenerateRandomByte(len int) []byte {
-	b := make([]byte, len)
+func GenerateRandomByte(length int) []byte {
+	b := make([]byte, length)
 	if _, err := io.ReadFull(rand.Reader, b); err != nil {
 		return nil
 	}
 	return b
+}
+
+func RandomChars(length int, args ...[]byte) string {
+	if length <= 0 {
+		return ""
+	}
+
+	var chars []byte
+	if len(args) > 0 {
+		chars = args[0]
+	} else {
+		chars = StdChars
+	}
+
+	if length == 0 {
+		return ""
+	}
+	clen := len(chars)
+	if clen < 2 || clen > 256 {
+		panic("uniuri: wrong charset length for NewLenChars")
+	}
+	maxrb := 255 - (256 % clen)
+	b := make([]byte, length)
+	r := make([]byte, length+(length/4)) // storage for random bytes.
+	i := 0
+	for {
+		if _, err := rand.Read(r); err != nil {
+			panic("uniuri: error reading random bytes: " + err.Error())
+		}
+		for _, rb := range r {
+			c := int(rb)
+			if c > maxrb {
+				// Skip this number to avoid modulo bias.
+				continue
+			}
+			b[i] = chars[c%clen]
+			i++
+			if i == length {
+				return string(b)
+			}
+		}
+	}
 }

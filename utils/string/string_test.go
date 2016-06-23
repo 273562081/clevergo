@@ -34,3 +34,14 @@ func TestLowerFirst(t *testing.T) {
 		t.Errorf("LowerFirst(\"%s\") != \"%s\".\nthe wrong result: \"%s\"", s, trueStr, lowerStr)
 	}
 }
+
+func TestRandomChars(t *testing.T) {
+	length := 10
+	chars := RandomChars(length)
+
+	if len(chars) != length {
+		t.Errorf("The length(%d) of random chars(%s) is incorrect: %d.\n", len(chars), chars, length)
+	}
+
+	t.Logf("RandomChars: %s, length: %d.\n", chars, length)
+}
