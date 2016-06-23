@@ -2,14 +2,14 @@ package middleware
 
 import (
 	"github.com/clevergo/clevergo"
-	"strings"
 	"github.com/clevergo/jwt"
+	"strings"
 )
 
 var (
 	JWTMiddlewareID = "JWTMiddleware"
-	urlKey = "_jwt"
-	formKey = "_jwt"
+	urlKey          = "_jwt"
+	formKey         = "_jwt"
 )
 
 type JWTMiddleware struct {
@@ -20,8 +20,8 @@ type JWTMiddleware struct {
 
 func NewJWTMiddleware() *JWTMiddleware {
 	return &JWTMiddleware{
-		urlKey:urlKey,
-		formKey:formKey,
+		urlKey:  urlKey,
+		formKey: formKey,
 	}
 }
 
@@ -70,4 +70,3 @@ func (jm *JWTMiddleware) Handle(ctx *clevergo.Context) {
 	// Validate successfully.
 	jm.Next().Handle(ctx)
 }
-
