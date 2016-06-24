@@ -35,7 +35,7 @@ func init() {
 		srcPath: srcPath,
 		mode:    ModeDev,
 		// Server configuration
-		serverHost:     ":8080",
+		serverHost:     ":10000",
 		serverProtocol: "HTTP",
 		serverCertFile: "",
 		serverKeyFile:  "",
