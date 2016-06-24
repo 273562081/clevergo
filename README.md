@@ -7,22 +7,27 @@ CleverGO is a simple, high performance and secure web framework for Golang. This
 
 # Features
 - **High Performance**
-- **Middleware** 
+
+- **Middleware**
 You also can call it as **blocker** or **filter**.
-**Built-in middlewares**:
-> **CSRF Middleware** Avoid **CSRF**(Cross-site request forgery) attack.
-> **JWT Middleware** **Authenticating** by **JSON WEB TOKEN**
+**Built-in middlewares**: **CSRF Middleware** (Avoid **Cross-site request forgery** attack), **JWT Middleware** (**Authenticating** by **JSON WEB TOKEN**)
+
 - **Simple**
+
 - **Secure**
+
 - **JWT**
 Support **JSON WEB TOKEN**
+
 - **Restful**
 Support Restful API, but it does not provide built-in support for version control, 
 you also can implement this easily if necessary.
-- **Components**
-> **Session**
-> **Log**
-> **Cache**
+
+- **Session**
+
+- **Log**
+
+- **Cache**
 
 # Official Website
 **[https://headwindfly.com](https://headwindfly.com)** The official website is setting up(base on CleverGo),
