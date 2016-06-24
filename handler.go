@@ -53,9 +53,6 @@ func errorHandler(w http.ResponseWriter, r *http.Request, status int, v interfac
 <head>
     <title>{{title}}</title>
     <style>
-    	h1,h2 {
-    	    text-align: center;
-    	}
         hr {
             border: 1px dotted;
             color: rgba(3, 169, 244, 0.12);
@@ -65,7 +62,6 @@ func errorHandler(w http.ResponseWriter, r *http.Request, status int, v interfac
         .info {
             color: red;
             font-weight: bold;
-            text-align: center;
         }
 
         .stack {

@@ -27,7 +27,7 @@ type Application struct {
 
 func NewApplication() *Application {
 	return &Application{
-		router:          httprouter.New(),
+		router:          NewRouter(),
 		middlewares:     make([]Middleware, 0),
 		firstMiddleware: nil,
 		actions:         make([]*WebAction, 0),
