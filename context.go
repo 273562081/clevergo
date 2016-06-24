@@ -50,7 +50,9 @@ func (ctx *Context) GetSession() error {
 }
 
 func (ctx *Context) Flush() {
-	if !ctx.Response.cancel {
+	if err := recover(); err != nil {
+		ctx.app.panicHandler(ctx.Response.writer, ctx.Request.Request, err)
+	} else if !ctx.Response.cancel {
 		// send response status and headers.
 		ctx.Response.writer.WriteHeader(ctx.Response.status)
 

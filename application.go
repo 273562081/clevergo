@@ -23,6 +23,7 @@ type Application struct {
 	logger          *log.Logger
 	cache           *cache.RedisCache
 	jwt             *jwt.JWT
+	panicHandler    func(http.ResponseWriter, *http.Request, interface{})
 }
 
 func NewApplication() *Application {
@@ -35,11 +36,12 @@ func NewApplication() *Application {
 		sessionStore:    nil,
 		logger:          nil,
 		cache:           nil,
+		panicHandler:    PanicHandler,
 	}
 }
 
 func (a *Application) SetPanicHandler(handler func(http.ResponseWriter, *http.Request, interface{})) {
-	a.router.PanicHandler = handler
+	a.panicHandler = handler
 }
 
 func (a *Application) SetMethodNotAllowedHandler(handler http.Handler) {

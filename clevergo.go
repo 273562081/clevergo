@@ -253,7 +253,7 @@ func NewRouter() *httprouter.Router {
 		HandleOPTIONS:          Configuration.routerHandleOPTIONS,
 		NotFound:               &NotFoundHandler{},
 		MethodNotAllowed:       &MethodNotAllowedHandler{},
-		PanicHandler:           PanicHandler,
+		PanicHandler:           nil,
 	}
 }
 
