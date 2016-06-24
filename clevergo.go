@@ -205,7 +205,7 @@ func Init() {
 			panic("The session depends on redis cache, please enable the cache component.")
 		}
 
-		store := session.NewRedisStore(Configuration.cache.GetPool(), session.Options{})
+		store := session.NewRedisStore(Configuration.cache.GetPool(), session.Options{Path: "/"})
 
 		store.SetMaxAge(Configuration.sessionMaxAge)
 
