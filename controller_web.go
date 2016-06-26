@@ -82,7 +82,7 @@ func (wc *WebController) BeforeResponse() {
 	wc.saveSession()
 }
 
-func (wc *WebController) Actions() map[string]WebActionRoute {
+func (wc *WebController) Actions() WebActionRoutes {
 	return map[string]WebActionRoute{}
 }
 

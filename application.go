@@ -111,7 +111,7 @@ func (a *Application) RegisterWebController(c WebControllerInterface) {
 	if actionsMethod.IsValid() {
 		values := actionsMethod.Call([]reflect.Value{})
 		for i := 0; i < len(values); i++ {
-			if value, ok := values[i].Interface().(map[string]WebActionRoute); ok {
+			if value, ok := values[i].Interface().(WebActionRoutes); ok {
 				for k, v := range value {
 					actionsRoute[Configuration.actionPrefix+k+Configuration.actionSuffix] = v
 				}

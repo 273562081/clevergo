@@ -9,7 +9,7 @@ type WebControllerInterface interface {
 	BeforeAction() bool
 	BeforeResponse()
 	SkipMiddlewares() map[string]SkipMiddlewares
-	Actions() map[string]WebActionRoute
+	Actions() WebActionRoutes
 	Layout() (bool, string)
 	ViewPath() string
 }

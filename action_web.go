@@ -127,3 +127,5 @@ func NewWebActionRoute(routes []string, args ...[]string) WebActionRoute {
 		Methods: methods,
 	}
 }
+
+type WebActionRoutes map[string]WebActionRoute
