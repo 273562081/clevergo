@@ -2,6 +2,7 @@ package clevergo
 
 import (
 	"crypto"
+	"fmt"
 	"github.com/clevergo/cache"
 	"github.com/clevergo/clevergo/utils/string"
 	"github.com/clevergo/jwt"
@@ -280,6 +281,7 @@ func Run() {
 	}
 
 	err := http.ListenAndServe(Configuration.serverHost, apps)
+	fmt.Printf("Application started.\n")
 	if err != nil {
 		panic(err)
 	}
