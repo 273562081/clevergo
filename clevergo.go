@@ -280,8 +280,8 @@ func Run() {
 		app.Run()
 	}
 
-	err := http.ListenAndServe(Configuration.serverHost, apps)
 	fmt.Printf("Application started.\n")
+	err := http.ListenAndServe(Configuration.serverHost, apps)
 	if err != nil {
 		panic(err)
 	}

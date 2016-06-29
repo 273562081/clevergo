@@ -110,6 +110,28 @@ func (c *Config) Load(filename string) {
 		c.mode = ModeDev
 	}
 
+	// Get server configuration.
+	// Set server configuration
+	serverHost, err := section.GetString("server.host")
+	if err == nil {
+		c.serverHost = serverHost
+	}
+	serverProtocol, err := section.GetString("server.protocol")
+	if err == nil {
+		if !strings.EqualFold("HTTP", serverProtocol) && !strings.EqualFold("HTTPS", serverProtocol) {
+			panic("The protocol is not supported: " + serverProtocol + ", only support HTTP and HTTPS")
+		}
+		c.serverProtocol = serverProtocol
+	}
+	serverCertFile, err := section.GetString("server.cert_file")
+	if err == nil {
+		c.serverCertFile = serverCertFile
+	}
+	serverKeyFile, err := section.GetString("server.key_file")
+	if err == nil {
+		c.serverKeyFile = serverKeyFile
+	}
+
 	// Get controller configuration.
 	controllerPrefix, err := section.GetString("controller.prefix")
 	if err == nil {
