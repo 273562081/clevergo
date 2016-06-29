@@ -53,8 +53,8 @@ func (csrf *CSRFMiddleware) Handle(next clevergo.Handler) clevergo.Handler {
 			csrfToken := GenerateCSRFToken(csrf.MaskLen, trueToken)
 			ctx.Values[csrf.Key] = csrfToken
 			ctx.Session.Set(csrf.SessionKey, trueToken)
-			next.Handle(ctx)
 		}
+		next.Handle(ctx)
 	})
 }
 
