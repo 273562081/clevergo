@@ -195,7 +195,7 @@ func Init() {
 		Configuration.cache = cache.NewRedisCache(redisPool)
 		_, err := Configuration.cache.GetConn().Do("PING")
 		if err != nil {
-			panic(err)
+			panic("Redis Server PING error reached: " + err.Error())
 		}
 	}
 

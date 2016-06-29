@@ -9,7 +9,6 @@ import (
 )
 
 type RestAction struct {
-	BaseMiddleware
 	app        *Application           // resource's application.
 	route      string                 // resource's route.
 	methods    map[string]*RestMethod // resource's methods.
@@ -103,6 +102,8 @@ func (ra *RestAction) Handle(ctx *Context) {
 }
 
 func GenerateRestActionHandler(ra *RestAction) httprouter.Handle {
+	handler := getActionHandler(ra)
+
 	return func(rw http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		ctx := NewContext(ra.app, rw, r, params)
 		ctx.SkipMiddlewares = ra.methods[ctx.Request.Method].skipMiddlewares
@@ -114,13 +115,8 @@ func GenerateRestActionHandler(ra *RestAction) httprouter.Handle {
 			defer ctx.Log.Flush()
 		}
 
-		if ra.app.firstMiddleware != nil {
-			handler := ra.app.firstMiddleware
-			handler.Final().SetNext(ra)
-			handler.Handle(ctx)
-		} else {
-			ra.Handle(ctx)
-		}
+		handler.Handle(ctx)
+
 		return
 	}
 }

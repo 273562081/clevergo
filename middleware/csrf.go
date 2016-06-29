@@ -14,7 +14,6 @@ var (
 )
 
 type CSRFMiddleware struct {
-	clevergo.BaseMiddleware
 	Len          int
 	Key          string
 	SessionKey   string
@@ -25,36 +24,38 @@ type CSRFMiddleware struct {
 	ErrorInvalid string
 }
 
-func (csrf *CSRFMiddleware) Handle(ctx *clevergo.Context) {
-	var trueToken string
-	if ctx.Session == nil {
-		err := ctx.GetSession()
-		if err != nil {
-			panic(err)
+func (csrf *CSRFMiddleware) Handle(next clevergo.Handler) clevergo.Handler {
+	return clevergo.HandlerFunc(func(ctx *clevergo.Context) {
+		var trueToken string
+		if ctx.Session == nil {
+			err := ctx.GetSession()
+			if err != nil {
+				panic(err)
+			}
 		}
-	}
 
-	token, err := ctx.Session.Get(csrf.SessionKey)
-	if (err != nil) || (token == nil) {
-		trueToken = stringutil.GenerateRandomString(csrf.Len)
-	} else {
-		trueToken = token.(string)
-	}
-
-	if _, safe := csrf.SafeMethods[ctx.Request.Method]; !safe {
-		if (len(trueToken) != csrf.MaskLen) &&
-			!ValidateCSRFToken(csrf.MaskLen, ctx.Request.PostFormValue(csrf.FormKey), trueToken) &&
-			!ValidateCSRFToken(csrf.MaskLen, ctx.Request.Header.Get(csrf.HeaderKey), trueToken) {
-			ctx.Response.SetStatus(http.StatusBadRequest)
-			ctx.Response.SetBody(csrf.ErrorInvalid)
-			return
+		token, err := ctx.Session.Get(csrf.SessionKey)
+		if (err != nil) || (token == nil) {
+			trueToken = stringutil.GenerateRandomString(csrf.Len)
+		} else {
+			trueToken = token.(string)
 		}
-	}
 
-	csrfToken := GenerateCSRFToken(csrf.MaskLen, trueToken)
-	ctx.Values[csrf.Key] = csrfToken
-	ctx.Session.Set(csrf.SessionKey, trueToken)
-	csrf.Next().Handle(ctx)
+		if _, safe := csrf.SafeMethods[ctx.Request.Method]; !safe {
+			if (len(trueToken) != csrf.MaskLen) &&
+				!ValidateCSRFToken(csrf.MaskLen, ctx.Request.PostFormValue(csrf.FormKey), trueToken) &&
+				!ValidateCSRFToken(csrf.MaskLen, ctx.Request.Header.Get(csrf.HeaderKey), trueToken) {
+				ctx.Response.SetStatus(http.StatusBadRequest)
+				ctx.Response.SetBody(csrf.ErrorInvalid)
+				return
+			}
+		} else {
+			csrfToken := GenerateCSRFToken(csrf.MaskLen, trueToken)
+			ctx.Values[csrf.Key] = csrfToken
+			ctx.Session.Set(csrf.SessionKey, trueToken)
+			next.Handle(ctx)
+		}
+	})
 }
 
 func NewCSRFMiddleware() *CSRFMiddleware {

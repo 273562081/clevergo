@@ -14,29 +14,29 @@ import (
 )
 
 type Application struct {
-	router          *httprouter.Router
-	middlewares     []Middleware
-	firstMiddleware Middleware
-	actions         []*WebAction
-	resources       []*RestAction
-	sessionStore    session.Store
-	logger          *log.Logger
-	cache           *cache.RedisCache
-	jwt             *jwt.JWT
-	panicHandler    func(http.ResponseWriter, *http.Request, interface{})
+	router        *httprouter.Router
+	middlewares   []Middleware
+	middleHandler Handler
+	actions       []*WebAction
+	resources     []*RestAction
+	sessionStore  session.Store
+	logger        *log.Logger
+	cache         *cache.RedisCache
+	jwt           *jwt.JWT
+	panicHandler  func(http.ResponseWriter, *http.Request, interface{})
 }
 
 func NewApplication() *Application {
 	return &Application{
-		router:          NewRouter(),
-		middlewares:     make([]Middleware, 0),
-		firstMiddleware: nil,
-		actions:         make([]*WebAction, 0),
-		resources:       make([]*RestAction, 0),
-		sessionStore:    nil,
-		logger:          nil,
-		cache:           nil,
-		panicHandler:    PanicHandler,
+		router:        NewRouter(),
+		middlewares:   make([]Middleware, 0),
+		middleHandler: nil,
+		actions:       make([]*WebAction, 0),
+		resources:     make([]*RestAction, 0),
+		sessionStore:  nil,
+		logger:        nil,
+		cache:         nil,
+		panicHandler:  PanicHandler,
 	}
 }
 
@@ -216,17 +216,14 @@ func (a *Application) RegisterStaticResources(route, path string) {
 }
 
 func (a *Application) Run() {
-	// Initialize first middleware and final middleware.
-	middlewaresLen := len(a.middlewares)
-	if middlewaresLen > 0 {
-		if middlewaresLen > 1 {
-			for i := 0; i < middlewaresLen-1; i++ {
-				a.middlewares[i].SetNext(a.middlewares[i+1])
-			}
+	// Initialize middleware handler.
+	/*middlewareLen := len(a.middlewares)
+	if middlewareLen > 0 {
+		a.middleHandler = a.middlewares[middlewareLen - 1].Handle
+		for i := middlewareLen - 2; i >= 0; i-- {
+			a.middleHandler = a.middlewares[i].Handle(a.middleHandler)
 		}
-		a.middlewares[0].SetFinal(a.middlewares[middlewaresLen-1])
-		a.firstMiddleware = a.middlewares[0]
-	}
+	}*/
 
 	// Register web controller's action.
 	for i := 0; i < len(a.actions); i++ {

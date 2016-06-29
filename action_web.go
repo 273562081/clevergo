@@ -8,7 +8,6 @@ import (
 )
 
 type WebAction struct {
-	BaseMiddleware
 	app             *Application      // action's application.
 	routes          []string          // action's route.
 	methods         []string          // action's allowed methods.
@@ -89,6 +88,8 @@ func (wa *WebAction) Handle(ctx *Context) {
 }
 
 func GenerateWebActionHandler(wa *WebAction) httprouter.Handle {
+	handler := getActionHandler(wa)
+
 	return func(rw http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		ctx := NewContext(wa.app, rw, r, params)
 		ctx.SkipMiddlewares = wa.skipMiddlewares
@@ -100,13 +101,8 @@ func GenerateWebActionHandler(wa *WebAction) httprouter.Handle {
 			defer ctx.Log.Flush()
 		}
 
-		if wa.app.firstMiddleware != nil {
-			handler := wa.app.firstMiddleware
-			handler.Final().SetNext(wa)
-			handler.Handle(ctx)
-		} else {
-			wa.Handle(ctx)
-		}
+		handler.Handle(ctx)
+
 		return
 	}
 }

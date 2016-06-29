@@ -12,6 +12,16 @@ import (
 	"strings"
 )
 
+type Handler interface {
+	Handle(ctx *Context)
+}
+
+type HandlerFunc func(*Context)
+
+func (f HandlerFunc) Handle(ctx *Context) {
+	f(ctx)
+}
+
 type NotFoundHandler struct {
 }
 
