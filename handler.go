@@ -22,6 +22,12 @@ func (f HandlerFunc) Handle(ctx *Context) {
 	f(ctx)
 }
 
+type RouteHandler struct {
+	Path    string
+	Methods []string
+	Handler http.Handler
+}
+
 type NotFoundHandler struct {
 }
 

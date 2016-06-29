@@ -14,30 +14,38 @@ import (
 )
 
 type Application struct {
-	router        *httprouter.Router
-	middlewares   []Middleware
-	middleHandler Handler
-	actions       []*WebAction
-	resources     []*RestAction
-	sessionStore  session.Store
-	logger        *log.Logger
-	cache         *cache.RedisCache
-	jwt           *jwt.JWT
-	panicHandler  func(http.ResponseWriter, *http.Request, interface{})
+	router       *httprouter.Router
+	handlers     []*RouteHandler
+	middlewares  []Middleware
+	actions      []*WebAction
+	resources    []*RestAction
+	sessionStore session.Store
+	logger       *log.Logger
+	cache        *cache.RedisCache
+	jwt          *jwt.JWT
+	panicHandler func(http.ResponseWriter, *http.Request, interface{})
 }
 
 func NewApplication() *Application {
 	return &Application{
-		router:        NewRouter(),
-		middlewares:   make([]Middleware, 0),
-		middleHandler: nil,
-		actions:       make([]*WebAction, 0),
-		resources:     make([]*RestAction, 0),
-		sessionStore:  nil,
-		logger:        nil,
-		cache:         nil,
-		panicHandler:  PanicHandler,
+		router:       NewRouter(),
+		handlers:     make([]*RouteHandler, 0),
+		middlewares:  make([]Middleware, 0),
+		actions:      make([]*WebAction, 0),
+		resources:    make([]*RestAction, 0),
+		sessionStore: nil,
+		logger:       nil,
+		cache:        nil,
+		panicHandler: PanicHandler,
 	}
+}
+
+func (a *Application) AddHandler(path string, methods []string, handler http.Handler) {
+	a.handlers = append(a.handlers, &RouteHandler{
+		Path:    path,
+		Methods: methods,
+		Handler: handler,
+	})
 }
 
 func (a *Application) SetPanicHandler(handler func(http.ResponseWriter, *http.Request, interface{})) {
@@ -216,15 +224,6 @@ func (a *Application) RegisterStaticResources(route, path string) {
 }
 
 func (a *Application) Run() {
-	// Initialize middleware handler.
-	/*middlewareLen := len(a.middlewares)
-	if middlewareLen > 0 {
-		a.middleHandler = a.middlewares[middlewareLen - 1].Handle
-		for i := middlewareLen - 2; i >= 0; i-- {
-			a.middleHandler = a.middlewares[i].Handle(a.middleHandler)
-		}
-	}*/
-
 	// Register web controller's action.
 	for i := 0; i < len(a.actions); i++ {
 		a.actions[i].handler = GenerateWebActionHandler(a.actions[i])
@@ -243,6 +242,15 @@ func (a *Application) Run() {
 		for method, _ := range a.resources[i].methods {
 			fmt.Printf("Register restful controller's route \"%s\" with method: %s\n", a.resources[i].route, method)
 			a.router.Handle(method, a.resources[i].route, a.resources[i].handler)
+		}
+	}
+
+	// Register other handlers.
+	for i := 0; i < len(a.handlers); i++ {
+		for j := 0; j < len(a.handlers[i].Methods); j++ {
+			method := a.handlers[i].Methods[j]
+			fmt.Printf("Register other handler's route \"%s\" with method: %s\n", a.handlers[i].Path, method)
+			a.router.Handler(method, a.handlers[i].Path, a.handlers[i].Handler)
 		}
 	}
 }
