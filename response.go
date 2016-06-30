@@ -18,6 +18,14 @@ func NewResponse(rw http.ResponseWriter) *Response {
 	}
 }
 
+func (r *Response) Writer() http.ResponseWriter {
+	return r.writer
+}
+
+func (r *Response) SetCancel(cancel bool) {
+	r.cancel = cancel
+}
+
 func (r *Response) Status() int {
 	return r.status
 }
